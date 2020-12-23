@@ -3,8 +3,68 @@
 
 # Third party import
 import tensorflow as tf
-from tensorflow.keras import Model
+from tensorflow.keras import Model, Layer
 from tensorflow.keras.layers import Activation, Conv2D, Dense, Dropout, Flatten, LSTM
+
+
+
+
+
+'''Attention head class. Matrices are trainable variables. Applies Attention Mechanism to
+ embedding vector.'''
+class attention_head():
+    def __init__(self, embedding_length, output_len):
+        self.wQ = tf.Variable(tf.random.normal([embedding_length, output_len]))
+        self.wK = tf.Variable(tf.random.normal([embedding_length, output_len]))
+        self.wV = tf.Variable(tf.random.normal([embedding_length, output_len]))
+
+    def __call__(self, x):
+        queries = tf.matmul(x, self.wQ)
+        keys = tf.matmul(x, self.wK)
+        values = tf.matmul(x, self.wV)
+        dk = tf.sqrt(tf.shape(keys)[0])
+        return tf.matmul(tf.nn.softmax((tf.matmul(queries, keys)) / dk), values)
+
+
+
+
+
+'''Encoder class. Goes through self attention and feed forward neural steps.'''
+class encoder(Layer):
+
+    def __init__(self, embedding_length, output_len, nheads = 1, wO_len = 4):
+        super(encoder, self).__init__()
+
+        self.nheads = nheads
+        self.heads = []
+        for _ in range(len(nheads)):
+            self.heads.append(attention_head.__init__(embedding_length, output_len))
+        self.wO = None
+        if(self.nheads >1):
+            self.wO = tf.Variable(tf.random.normal([nheads*output_len,wO_len]))
+
+
+'''Does self attention. Normalizes and adds residual. Does Feed Forward Neural Network.
+Adds and normalizes. Assume input is already embedded.'''
+    def __call__(self,x):
+        Z = tf.Tensor([], dtype = float)
+
+        for head in self.heads:
+            tf.concat([Z,head(x)])
+        tf.matmul(Z, self.wO) #attention step
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 class MusicGenerator(Model):
     """The tensorflow neural network architecture.
