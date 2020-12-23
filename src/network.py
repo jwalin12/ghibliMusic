@@ -27,16 +27,24 @@ class attention_head:
         return tf.matmul(tf.nn.softmax((tf.matmul(queries, keys)) / dk), values)
 
 
-
+def point_wise_feed_forward_network(d_model, dff):
+    return tf.keras.Sequential([
+            tf.keras.layers.Dense(dff, activation='relu'),  # (batch_size, seq_len, dff)
+            tf.keras.layers.Dense(d_model)  # (batch_size, seq_len, d_model)
+        ])
 
 
 '''Encoder class. Goes through self attention and feed forward neural steps.'''
 class encoder(Layer):
+
+
+
     def __init__(self, embedding_length, output_len, nheads = 1, wO_len = 4):
         super(encoder, self).__init__()
 
         self.nheads = nheads
         self.heads = []
+        self.ffn = point_wise_feed_forward_network(d_model=output_len, dff = embedding_length) #TODO: not sure about input/output dims here
         for _ in range(nheads):
             self.heads.append(attention_head.__init__(embedding_length, output_len))
         self.wO = None
@@ -51,8 +59,9 @@ Adds and normalizes. Assume input is already embedded.'''
             tf.concat([Z,head(x)])
         atten_to_norm = tf.matmul(Z, self.wO)+ x #attention step
         atten_normed = tf.keras.layers.LayerNormalization(atten_to_norm) #adding and normalizing
-
-        #TODO: feedforward network
+        ffn_out_to_norm = self.ffn(atten_to_norm) #feed into feed forward network
+        ffn_out_normed =  tf.keras.layers.LayerNormalization(ffn_out_to_norm) #normalize
+        return ffn_out_normed
 
 
 
