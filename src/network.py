@@ -39,17 +39,21 @@ class encoder(Layer):
 
 
 
-    def __init__(self, embedding_length, output_len, nheads = 1, wO_len = 4):
+    def __init__(self, embedding_length, output_len, nheads = 1, wO_len = 4, rate = 0.1):
         super(encoder, self).__init__()
 
         self.nheads = nheads
         self.heads = []
-        self.ffn = point_wise_feed_forward_network(d_model=output_len, dff = embedding_length) #TODO: not sure about input/output dims here
+        # TODO: not sure about input/output dims here
+        self.ffn = point_wise_feed_forward_network(d_model=output_len, dff = embedding_length)
         for _ in range(nheads):
             self.heads.append(attention_head.__init__(embedding_length, output_len))
         self.wO = None
+        self.norm_layer = tf.keras.layers.LayerNormalization(axis=1)
         if (self.nheads >1):
             self.wO = tf.Variable(tf.random.normal([nheads*output_len,wO_len]))
+        self.dropout1 = tf.keras.layers.Dropout(rate)
+        self.dropout2 = tf.keras.layers.Dropout(rate)
 
 '''Does self attention. Normalizes and adds residual. Does Feed Forward Neural Network.
 Adds and normalizes. Assume input is already embedded.'''
@@ -57,10 +61,11 @@ Adds and normalizes. Assume input is already embedded.'''
         Z = tf.Tensor([], dtype = float, value_index=0)
         for head in self.heads:
             tf.concat([Z,head(x)])
-        atten_to_norm = tf.matmul(Z, self.wO)+ x #attention step
-        atten_normed = tf.keras.layers.LayerNormalization(atten_to_norm) #adding and normalizing
-        ffn_out_to_norm = self.ffn(atten_to_norm) #feed into feed forward network
-        ffn_out_normed =  tf.keras.layers.LayerNormalization(ffn_out_to_norm) #normalize
+
+        atten_to_norm = self.dropout1(tf.matmul(Z, self.wO)+ x) #attention step
+        atten_normed = self.norm_layer(atten_to_norm) #adding and normalizing
+        ffn_out_to_norm = self.dropout2(self.ffn(atten_to_norm)) #feed into feed forward network
+        ffn_out_normed =  self.norm_layer(ffn_out_to_norm) #normalize
         return ffn_out_normed
 
 

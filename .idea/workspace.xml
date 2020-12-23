@@ -2,6 +2,7 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="0ca3227d-fee9-444d-97aa-5be6aa8c52d4" name="Default Changelist" comment="">
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/network.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/network.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
@@ -37,9 +38,9 @@
     <servers />
   </component>
   <component name="WindowStateProjectService">
-    <state x="482" y="154" width="670" height="676" key="search.everywhere.popup" timestamp="1608725361456">
+    <state x="482" y="154" width="670" height="676" key="search.everywhere.popup" timestamp="1608738438598">
       <screen x="0" y="23" width="1440" height="807" />
     </state>
-    <state x="482" y="154" width="670" height="676" key="search.everywhere.popup/0.23.1440.807@0.23.1440.807" timestamp="1608725361456" />
+    <state x="482" y="154" width="670" height="676" key="search.everywhere.popup/0.23.1440.807@0.23.1440.807" timestamp="1608738438598" />
   </component>
 </project>
