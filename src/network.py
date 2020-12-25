@@ -69,23 +69,6 @@ Adds and normalizes. Assume input is already embedded.'''
         return ffn_out_normed
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 class MusicGenerator(Model):
     """The tensorflow neural network architecture.
 

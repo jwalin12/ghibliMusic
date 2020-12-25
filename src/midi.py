@@ -132,7 +132,6 @@ class MIDIModule():
         """
 
         note_to_int = MIDIModule.to_int(notes)
-
         network_input = []
         network_output = []
 
