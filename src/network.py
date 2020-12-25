@@ -8,9 +8,6 @@ from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import Activation, Conv2D, Dense, Dropout, Flatten, LSTM
 
 
-
-
-
 '''Attention head class. Matrices are trainable variables. Applies Attention Mechanism to
  embedding vector.'''
 class attention_head:
@@ -50,23 +47,23 @@ class encoder(Layer):
             self.heads.append(attention_head.__init__(embedding_length, output_len))
         self.wO = None
         self.norm_layer = tf.keras.layers.LayerNormalization(axis=1)
-        if (self.nheads >1):
+        if self.nheads >1:
             self.wO = tf.Variable(tf.random.normal([nheads*output_len,wO_len]))
         self.dropout1 = tf.keras.layers.Dropout(rate)
         self.dropout2 = tf.keras.layers.Dropout(rate)
 
 '''Does self attention. Normalizes and adds residual. Does Feed Forward Neural Network.
 Adds and normalizes. Assume input is already embedded.'''
-    def __call__(self,x):
-        Z = tf.Tensor([], dtype = float, value_index=0)
-        for head in self.heads:
-            tf.concat([Z,head(x)])
-
-        atten_to_norm = self.dropout1(tf.matmul(Z, self.wO)+ x) #attention step
-        atten_normed = self.norm_layer(atten_to_norm) #adding and normalizing
-        ffn_out_to_norm = self.dropout2(self.ffn(atten_to_norm)) #feed into feed forward network
-        ffn_out_normed =  self.norm_layer(ffn_out_to_norm) #normalize
-        return ffn_out_normed
+    # def __call__(self,x):
+    #     Z = tf.Tensor([], dtype = float, value_index=0)
+    #     for head in self.heads:
+    #         tf.concat([Z,head(x)])
+    #
+    #     atten_to_norm = self.dropout1(tf.matmul(Z, self.wO)+ x) #attention step
+    #     atten_normed = self.norm_layer(atten_to_norm) #adding and normalizing
+    #     ffn_out_to_norm = self.dropout2(self.ffn(atten_to_norm)) #feed into feed forward network
+    #     ffn_out_normed =  self.norm_layer(ffn_out_to_norm) #normalize
+    #     return ffn_out_normed
 
 
 class MusicGenerator(Model):
@@ -75,23 +72,20 @@ class MusicGenerator(Model):
     ...
 
     Uses:
-      LSTM
+      ...
     """
 
     def __init__(self, network_input, n_vocab):
-        """A tensorflow model that uses multiple LSTMs to generate musical 
-        output. 
-
-        ...
-
-        WIP: Inspiration by Skuli's architecture at the moment.
-
-        Source:
-        Towards Data Science - How to Generate Music using LSTM  Neural
-        Networks in Keras by Sigurour Skuli
+        """A tensorflow model that uses a Transformer architecture to
+        generate musical output.
 
         Arguments:
-            None
+            network_input   : ...
+            n_vocab         : ...
+
+
+        Returns:
+            self.call   : Execution method.
         """
 
         super(MusicGenerator, self).__init__()
