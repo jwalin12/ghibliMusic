@@ -32,10 +32,10 @@ class MIDIModule():
         Output array is a list of all notes in sequential order.
 
         Args:
-            directory   : The path where the MIDI file(s) are located.
+            directory   : Path where the MIDI file(s) are located.
 
         Return:
-            notes       : A list of notes transcribed from the MIDI file(s).
+            notes   : List of notes transcribed from the MIDI file(s).
         """
 
         notes = []
@@ -70,10 +70,10 @@ class MIDIModule():
         Output array is a list of all notes in sequential order.
 
         Args:
-            directory   : The path where the MIDI file(s) are located.
+            directory   : Path where the MIDI file(s) are located.
 
         Return:
-            songs       : A 2D-list.
+            songs   : A two-dimensional list.
         """
 
         songs = []
@@ -104,11 +104,11 @@ class MIDIModule():
         """Converts notes and chords into integer values.
 
         Args:
-            notes       : A list of notes.
+            notes   : List of notes.
 
         Returns:
-            note_to_int : A dictionary where the KV-pairs are a note and 
-                            number, respectively.
+            note_to_int : Dictionary where the KV-pairs are a note and number,
+                            respectively.
         """
 
         pitchnames = sorted(set(item for item in notes))
@@ -122,13 +122,12 @@ class MIDIModule():
         """Retrieve the input and output sequences.
 
         Args:
-            notes           : A list of notes.
-            sequence_length : The length of the sequence.
-                                (e.g. - len(note_list))
+            notes           : List of notes.
+            sequence_length : Length of the sequence ( ex. len(note_list) ).
 
         Returns:
-            network_input   : The input sequence.
-            network_output  : The output sequence.
+            network_input   : Input sequence.
+            network_output  : Output sequence.
         """
 
         note_to_int = MIDIModule.to_int(notes)
