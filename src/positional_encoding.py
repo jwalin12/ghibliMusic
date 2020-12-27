@@ -11,23 +11,28 @@ def positional_encoding(position, d_model):
 
     Source:
         Google - Attention Is All You Need
+        Google - MUSIC TRANSFORMER: GENERATING MUSIC WITH LONG-TERM STRUCTURE
 
     Args:
-        position    : ...
-        d_model     : ...
+        position    : position of the input
+        d_model     : max depth of the model
     
     Returns:
-        ...
+        A tensor of positional encoding vectors that must be added to the embedding vector to create
+        a final input vector, using pos_encoding[:, :seq_len, :].
     """
+
+
 
     def get_angles(pos, i, d_model):
         """Computes an angle using the token and index information
         for positional encoding space.
 
         Args:
-            position    : ...
-            d_model     : ...
-        
+            position: position of the input
+            d_model : depth of the model
+            i: dimension of embedding
+
         Returns:
             The token and index defined in positional encoding space.
         """
@@ -51,3 +56,4 @@ def positional_encoding(position, d_model):
     pos_encoding = angle_rads[np.newaxis, ...]
 
     return tf.cast(pos_encoding, dtype=tf.float32)
+

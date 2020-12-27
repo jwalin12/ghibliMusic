@@ -23,7 +23,7 @@ class MIDIModule():
     """
 
     @staticmethod
-    def get_notes(directory):
+    def get_notes(directory,  make_chords_from_notes = False):
         """Converts MIDI files within a directory into a single note array.
 
         Directory is a string of the filepath from which to import the midi
@@ -33,6 +33,8 @@ class MIDIModule():
 
         Args:
             directory   : Path where the MIDI file(s) are located.
+            make_chords_from_notes: Boolean that indicates whether or not chords should
+            be treated as seperate objects or collections of notes.
 
         Return:
             notes   : List of notes transcribed from the MIDI file(s).
@@ -54,13 +56,20 @@ class MIDIModule():
                 if isinstance(element, note.Note):
                     notes.append(str(element.pitch))
                 elif isinstance(element, chord.Chord):
-                    notes.append('.'.join(str(n) for n in element.normalOrder))
+                    if (make_chords_from_notes):
+                        notes.append("CHORD")
+                        for n in element.normalOrder:
+                            notes.append(str(n.pitch))
+                        notes.append(str(element.duration))
+                    else:
+                        notes.append('.'.join(str(n.pitch) for n in element.normalOrder))
+                        notes.append(str(element.duration))
 
         return notes
 
 
     @staticmethod
-    def get_notes_by_song(directory):
+    def get_notes_by_song(directory, make_chords_from_notes = False):
         """Converts MIDI files within a directory into a multidimensional
         array where the row is the song and the column is the note.
 
@@ -71,6 +80,8 @@ class MIDIModule():
 
         Args:
             directory   : Path where the MIDI file(s) are located.
+            make_chords_from_notes: indicates whether chords should be treated
+            as seperate objects or collections of notes.
 
         Return:
             songs   : A two-dimensional list.
@@ -91,8 +102,20 @@ class MIDIModule():
             for element in notes_to_parse:
                 if isinstance(element, note.Note):
                     notes.append(str(element.pitch))
+                    notes.append(str(element.duration))
+
+
                 elif isinstance(element, chord.Chord):
-                    notes.append('.'.join(str(n) for n in element.normalOrder))
+                    if(make_chords_from_notes):
+                        notes.append("CHORD")
+
+                        for n in element.normalOrder:
+                            notes.append(str(n.pitch))
+                        notes.append(str(element.duration))
+                        notes.append("CHORDEND")
+                    else:
+                        notes.append('.'.join(str(n.pitch) for n in element.normalOrder))
+                        notes.append(str(element.duration))
 
             songs.append(notes)
             
@@ -115,6 +138,40 @@ class MIDIModule():
         note_to_int = dict((note, number) for number, note in enumerate(pitchnames))
 
         return note_to_int
+
+
+    @staticmethod
+    def get_embedding(elements):
+        """
+            Returns Embeddings of elements. One-hot for notes. If the get_notes methods are used
+            with make_notes_from_chords = True, then it is is multi-hot for notes. Else it is one hot.
+            Args:
+                elements: list of elements(notes, chords, durations)
+            Returns:
+                Embeddings: one/multihot arrqys.
+            """
+        notes_to_int  = MIDIModule.to_int(elements)
+        embeddings = []
+        i = 0
+        while i <len(elements):
+            element = elements[i]
+            curr = [0]*len(elements)
+            curr[notes_to_int[element]] = 1
+            if(element == "CHORD"):
+                while(element != "CHORDEND"):
+                    i+=1
+                    element = elements[i]
+                    curr = [0] * len(elements)
+                    curr[notes_to_int[element]] = 1
+            else:
+                i+=1
+            embeddings.append(curr)
+
+
+
+
+
+
 
 
     @staticmethod
