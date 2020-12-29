@@ -62,7 +62,8 @@ class MIDIModule():
                             notes.append(str(n.pitch))
                         notes.append(str(element.duration))
                     else:
-                        notes.append(element)
+                        el = notes.append('.'.join(str(n) for n in element.notes))
+                        notes.append(el)
                         notes.append(str(element.duration))
 
         return notes
@@ -110,7 +111,8 @@ class MIDIModule():
                             notes.append(str(n.pitch))
                         notes.append(str(element.duration))
                     else:
-                        notes.append(element)
+                        el = notes.append('.'.join(str(n) for n in element.notes))
+                        notes.append(el)
                         notes.append(str(element.duration))
 
             songs.append(notes)
@@ -129,10 +131,15 @@ class MIDIModule():
                             respectively.
         """
 
-        pitchnames = sorted(set(item for item in notes))
+        pitchnames = set(item for item in notes)
         note_to_int = dict((note, number) for number, note in enumerate(pitchnames))
 
         return note_to_int
+
+
+
+#TODO: the below methods should use the word2vec trained layer, and then add that to positional encoding.
+
 
     @staticmethod
     def get_embedding(elements):
@@ -194,4 +201,3 @@ class MIDIModule():
             network_output.append(note_to_int[sequence_out])
 
         return network_input, network_output
-        

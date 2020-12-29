@@ -7,6 +7,7 @@ from scipy.spatial import distance
 from src.midi import MIDIModule
 import math
 from music21 import chord
+from music21.alpha.analysis.hasher import Hasher
 '''
 Word2Vec model for creating a music vocabulary.
 Inspiration: Modeling Musical Context with Word2vec by Dorien Herremans, Ching-Hua Chuan
@@ -24,7 +25,11 @@ def build_vocabulary(directory, make_chords_from_notes = False):
     mapped_data: mapping to int of every note
     '''
     data = MIDIModule.get_notes(directory, make_chords_from_notes)
+    print(data)
     word_dict = MIDIModule.to_int(data)
+    print(word_dict)
+    print(len(word_dict))
+
     reverse_dictionary = dict(zip(word_dict.values(),word_dict.keys()))
     mapped_data = []
     for element in data:
@@ -32,6 +37,7 @@ def build_vocabulary(directory, make_chords_from_notes = False):
     return word_dict, reverse_dictionary, mapped_data
 
 
+data_index = 0
 
 def generate_batch(batch_size, num_skips, skip_window, data):
   global data_index
@@ -66,33 +72,40 @@ def generate_batch(batch_size, num_skips, skip_window, data):
 
 
 # Step 4: Build and train a skip-gram model.
-directory ="" #TODO: directory here
+directory ='/Users/jwalinjoshi/ghibliMusic'
 dictionary, reverse_dictionary, data = build_vocabulary(directory)
-vocabulary_size = len(directory)
-batch_size = 128
+vocabulary_size = len(dictionary)
+batch_size = 8 #TODO:change this to 128 later
 embedding_size = 256  # Dimension of the embedding vector.
-skip_window = 4  # How many words to consider left and right.
+skip_window = 1  # How many words to consider left and right.
 num_skips = skip_window * 2  # How many times to reuse an input to generate a label.
-alpha = 0.1  # learning rate
+alpha = 0.01  # learning rate
 num_steps = 1000001  # how long to train for
 
 # We pick a random validation set to sample nearest neighbors. Here we limit the
 # validation samples to the words that have a low numeric ID, which by
 # construction are also the most frequent.
-valid_size = 5  # Random set of words to evaluate similarity on.
-valid_window = 20  # Only pick dev samples in the head of the distribution.
+#TODO: scale these back up
+valid_size = 2 # Random set of words to evaluate similarity on.
+valid_window = 8  # Only pick dev samples in the head of the distribution.
 valid_examples = np.random.choice(valid_window, valid_size, replace=False)
-num_sampled = 64  # Number of negative examples to sample.
+num_sampled = 16  # Number of negative examples to sample.
 
 # Hand-picked validation set for music
-fMajor = chord.Chord("F A C")
-cMajor = chord.Chord("C E G")
-gMajor = chord.Chord("G B D")
 
-valid_centers = [cMajor, fMajor, gMajor]  # 145: C-E-G, 545: F-A-C, 2180: G-B-D
-valid_neighbors = [[fMajor, gMajor, chord.Chord('A C E'), chord.Chord("G Bb Eb"), chord.Chord("F A D"), chord.Chord('G Bb D')],
-                   [cMajor, chord.Chord("Bb D F"), chord.Chord("D F A"),chord.Chord("C Eb Ab"), chord.Chord("Bb D G"),chord.Chord("C Eb G")],
-                   [chord.Chord("D F# A"),cMajor,chord.Chord("E G B"), chord.Chord("D F Bb"), chord.Chord("C E A"), chord.Chord("D F A")]] # V, IV, vi, IIIb, IIb, v
+#TODO: if we choose to use chords as validation, have to change them to string format to the mapping is preserved. The chords HAVE to be present in the data.
+
+# fMajor = chord.Chord("F A C")
+# cMajor = chord.Chord("C E G")
+# gMajor = chord.Chord("G B D")
+#
+# valid_centers = [cMajor, fMajor, gMajor]  # 145: C-E-G, 545: F-A-C, 2180: G-B-D
+# valid_neighbors = [[fMajor, gMajor, chord.Chord('A C E'), chord.Chord("G Bb Eb"), chord.Chord("F A D"), chord.Chord('G Bb D')],
+#                    [cMajor, chord.Chord("Bb D F"), chord.Chord("D F A"),chord.Chord("C Eb Ab"), chord.Chord("Bb D G"),chord.Chord("C Eb G")],
+#                    [chord.Chord("D F# A"),cMajor,chord.Chord("E G B"), chord.Chord("D F Bb"), chord.Chord("C E A"), chord.Chord("D F A")]] # V, IV, vi, IIIb, IIb, v
+
+
+
 
 graph = tf.Graph()
 
@@ -106,7 +119,7 @@ with graph.as_default():
     # with tf.device('/cpu:0'):
     # Look up embeddings for inputs.
     embeddings = tf.Variable(
-        tf.random.uniform([vocabulary_size, embedding_size], -1.0, 1.0), name='embeddings')
+        tf.random.uniform([vocabulary_size+1, embedding_size], -1.0, 1.0), name='embeddings')
     embed = tf.nn.embedding_lookup(embeddings, train_inputs)
 
     # Construct the variables for the NCE loss
@@ -126,11 +139,11 @@ with graph.as_default():
                        num_sampled=num_sampled,
                        num_classes=vocabulary_size))
 
-    # Construct a ADAM optimizer.
-    optimizer = tf.optimizers.Adam(alpha)
+    # Construct an ADAm optimizer.
+    optimizer = tf.compat.v1.train.AdamOptimizer(alpha).minimize(loss)
 
     # Compute the cosine similarity between minibatch examples and all embeddings.
-    norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keep_dims=True), name='norm')
+    norm = tf.sqrt(tf.reduce_sum(tf.square(embeddings), 1, keepdims=True), name='norm')
     normalized_embeddings = embeddings / norm
     valid_embeddings = tf.nn.embedding_lookup(
         normalized_embeddings, valid_dataset)
@@ -138,11 +151,11 @@ with graph.as_default():
         valid_embeddings, normalized_embeddings, transpose_b=True, name='similarity')
 
     # Add variable initializer.
-    init = tf.global_variables_initializer()
+    init = tf.compat.v1.global_variables_initializer()
 
 # Step 5: Begin training.
 with tf.compat.v1.Session(graph=graph) as session:
-    saver = tf.train.compat.v1.Saver()
+    saver = tf.compat.v1.train.Saver()
     # We must initialize all variables before we use them.
     init.run()
     print("Initialized")
@@ -152,7 +165,7 @@ with tf.compat.v1.Session(graph=graph) as session:
     results_G = []
     for step in range(num_steps):
         batch_inputs, batch_labels = generate_batch(
-            batch_size, num_skips, skip_window)
+            batch_size, num_skips, skip_window, data)
         feed_dict = {train_inputs: batch_inputs, train_labels: batch_labels}
 
         # We perform one update step by evaluating the optimizer op (including it
@@ -164,41 +177,41 @@ with tf.compat.v1.Session(graph=graph) as session:
             if step > 0:
                 average_loss /= 2000
             # The average loss is an estimate of the loss over the last 2000 batches.
-            # print("Average loss at step ", step, ": ", average_loss)
-            print(average_loss)
+            print("Average loss at step ", step, ": ", average_loss)
+            #print(average_loss)
             average_loss = 0
 
         # Note that this is expensive (~20% slowdown if computed every 500 steps)
         # get the 8  most closest to the validation set
-        if step % 10000 == 0:
-            sim = similarity.eval()
-            norm_embeddings = normalized_embeddings.eval()
-
-            # hand-picked validation examples
-            for i, center in enumerate(valid_centers):
-                center_i = dictionary[center]
-                sim_values = []
-                log_str = "Similarity to %s:" % dictionary[center]
-                for neighbor in valid_neighbors[i]:
-                    neighbor_i = dictionary[neighbor]
-                    center_embedding = norm_embeddings[center_i]
-                    neighbor_embedding = norm_embeddings[neighbor_i]
-                    cos_dist = distance.cosine(center_embedding, neighbor_embedding)
-                    sim_values.append(cos_dist)
-                    log_str = "%s %s:%s," % (log_str, dictionary[neighbor], cos_dist)
-                if i == 0:
-                    results_C.append(sim_values)
-                elif i == 1:
-                    results_F.append(sim_values)
-                else:
-                    results_G.append(sim_values)
-                print(log_str)
-
-    final_embeddings = normalized_embeddings.eval()
-    saver.save(session, "saves/word2vec_music_pc_train")
-    np.savetxt('results_C.txt', results_C, delimiter=',', newline='\n')
-    np.savetxt('results_F.txt', results_F, delimiter=',', newline='\n')
-    np.savetxt('results_G.txt', results_G, delimiter=',', newline='\n')
+    #     if step % 10000 == 0:
+    #         sim = similarity.eval()
+    #         norm_embeddings = normalized_embeddings.eval()
+    #
+    #         # hand-picked validation examples
+    #         for i, center in enumerate(valid_centers):
+    #             center_i = dictionary[Hasher(center)]
+    #             sim_values = []
+    #             log_str = "Similarity to %s:" % dictionary[center]
+    #             for neighbor in valid_neighbors[i]:
+    #                 neighbor_i = dictionary[neighbor]
+    #                 center_embedding = norm_embeddings[center_i]
+    #                 neighbor_embedding = norm_embeddings[neighbor_i]
+    #                 cos_dist = distance.cosine(center_embedding, neighbor_embedding)
+    #                 sim_values.append(cos_dist)
+    #                 log_str = "%s %s:%s," % (log_str, dictionary[neighbor], cos_dist)
+    #             if i == 0:
+    #                 results_C.append(sim_values)
+    #             elif i == 1:
+    #                 results_F.append(sim_values)
+    #             else:
+    #                 results_G.append(sim_values)
+    #             print(log_str)
+    #
+    # final_embeddings = normalized_embeddings.eval()
+    # saver.save(session, "saves/word2vec_music_pc_train")
+    # np.savetxt('results_C.txt', results_C, delimiter=',', newline='\n')
+    # np.savetxt('results_F.txt', results_F, delimiter=',', newline='\n')
+    # np.savetxt('results_G.txt', results_G, delimiter=',', newline='\n')
 
 
 
