@@ -1,6 +1,6 @@
 # Local import
-from multihead_attention import MultiHeadAttention
-from positional_encoding import positional_encoding
+from src.multihead_attention import MultiHeadAttention
+from src.positional_encoding import positional_encoding
 
 # Third party import
 import tensorflow as tf
