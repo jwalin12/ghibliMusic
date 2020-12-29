@@ -22,7 +22,6 @@
     <list default="true" id="0ca3227d-fee9-444d-97aa-5be6aa8c52d4" name="Default Changelist" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/midi.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/midi.py" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/positional_encoding.py" beforeDir="false" afterPath="$PROJECT_DIR$/src/positional_encoding.py" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

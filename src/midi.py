@@ -58,11 +58,11 @@ class MIDIModule():
                 elif isinstance(element, chord.Chord):
                     if (make_chords_from_notes):
                         notes.append("CHORD")
-                        for n in element.normalOrder:
+                        for n in element.notes:
                             notes.append(str(n.pitch))
                         notes.append(str(element.duration))
                     else:
-                        notes.append('.'.join(str(n.pitch) for n in element.normalOrder))
+                        notes.append(element)
                         notes.append(str(element.duration))
 
         return notes
@@ -103,17 +103,14 @@ class MIDIModule():
                     notes.append(str(element.pitch))
                     notes.append(str(element.duration))
 
-
                 elif isinstance(element, chord.Chord):
-                    if(make_chords_from_notes):
+                    if (make_chords_from_notes):
                         notes.append("CHORD")
-
-                        for n in element.normalOrder:
+                        for n in element.notes:
                             notes.append(str(n.pitch))
                         notes.append(str(element.duration))
-                        notes.append("CHORDEND")
                     else:
-                        notes.append('.'.join(str(n.pitch) for n in element.normalOrder))
+                        notes.append(element)
                         notes.append(str(element.duration))
 
             songs.append(notes)
