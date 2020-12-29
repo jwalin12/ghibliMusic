@@ -49,7 +49,6 @@ class Transformer(Model):
                                     the preceding words.
             dec_padding_mask    : Tensor that provides padding for input decoder data.
 
-
         Returns:
             self.call   : Execution method.
         """
@@ -63,3 +62,4 @@ class Transformer(Model):
         final_output = self.final_layer(dec_output)  # (batch_size, tar_seq_len, target_vocab_size)
 
         return final_output, attention_weights
+        

@@ -67,7 +67,6 @@ class MIDIModule():
 
         return notes
 
-
     @staticmethod
     def get_notes_by_song(directory, make_chords_from_notes = False):
         """Converts MIDI files within a directory into a multidimensional
@@ -121,7 +120,6 @@ class MIDIModule():
             
         return songs
 
-
     @staticmethod
     def to_int(notes):
         """Converts notes and chords into integer values.
@@ -139,24 +137,28 @@ class MIDIModule():
 
         return note_to_int
 
-
     @staticmethod
     def get_embedding(elements):
+        """Returns Embeddings of elements. 
+        
+        One-hot for notes. If the get_notes methods are used with 
+        make_notes_from_chords = True then it is is multi-hot for notes, 
+        else it is one hot.
+    
+        Args:
+            elements    : List of elements (notes, chords, durations).
+        Returns:
+            embeddings  : One-hot/multi-hot array.
         """
-            Returns Embeddings of elements. One-hot for notes. If the get_notes methods are used
-            with make_notes_from_chords = True, then it is is multi-hot for notes. Else it is one hot.
-            Args:
-                elements: list of elements(notes, chords, durations)
-            Returns:
-                Embeddings: one/multihot arrqys.
-            """
         notes_to_int  = MIDIModule.to_int(elements)
         embeddings = []
+
         i = 0
         while i <len(elements):
             element = elements[i]
             curr = [0]*len(elements)
             curr[notes_to_int[element]] = 1
+
             if(element == "CHORD"):
                 while(element != "CHORDEND"):
                     i+=1
@@ -165,14 +167,10 @@ class MIDIModule():
                     curr[notes_to_int[element]] = 1
             else:
                 i+=1
+
             embeddings.append(curr)
 
-
-
-
-
-
-
+        return embeddings
 
     @staticmethod
     def get_sequences(notes, sequence_length):

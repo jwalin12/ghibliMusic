@@ -1,5 +1,6 @@
 # Local import
 from multihead_attention import MultiHeadAttention
+from positional_encoding import positional_encoding
 
 # Third party import
 import tensorflow as tf
@@ -107,7 +108,7 @@ class DecoderLayer(Layer):
 
 class Decoder(Layer):
     def __init__(self, num_layers, d_model, num_heads, dff, target_vocab_size,
-                positional_encoding, maximum_position_encoding, rate=0.1):
+                 maximum_position_encoding, rate=0.1):
         """Instantiate a Decoder object.
 
         Args:
