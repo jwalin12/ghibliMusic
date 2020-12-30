@@ -1,9 +1,12 @@
 # Local imports
-# ...
 
 # Third-party imports
 from music21 import converter, instrument, note, chord
 import glob
+
+
+
+
 
 class MIDIModule():
     """ The class for dealing with MIDI data.
@@ -21,6 +24,23 @@ class MIDIModule():
       Encoding
       ...
     """
+
+    @staticmethod
+    def to_int(notes):
+        """Converts notes and chords into integer values.
+
+        Args:
+            notes   : List of notes.
+
+        Returns:
+            note_to_int : Dictionary where the KV-pairs are a note and number,
+                            respectively.
+        """
+
+        pitchnames = set(item for item in notes)
+        note_to_int = dict((note, number) for number, note in enumerate(pitchnames))
+
+        return note_to_int
 
     @staticmethod
     def get_notes(directory,  make_chords_from_notes = False):
@@ -119,85 +139,6 @@ class MIDIModule():
             
         return songs
 
-    @staticmethod
-    def to_int(notes):
-        """Converts notes and chords into integer values.
-
-        Args:
-            notes   : List of notes.
-
-        Returns:
-            note_to_int : Dictionary where the KV-pairs are a note and number,
-                            respectively.
-        """
-
-        pitchnames = set(item for item in notes)
-        note_to_int = dict((note, number) for number, note in enumerate(pitchnames))
-
-        return note_to_int
 
 
 
-#TODO: the below methods should use the word2vec trained layer, and then add that to positional encoding.
-
-
-    @staticmethod
-    def get_embedding(elements):
-        """Returns Embeddings of elements. 
-        
-        One-hot for notes. If the get_notes methods are used with 
-        make_notes_from_chords = True then it is is multi-hot for notes, 
-        else it is one hot.
-    
-        Args:
-            elements    : List of elements (notes, chords, durations).
-        Returns:
-            embeddings  : One-hot/multi-hot array.
-        """
-        notes_to_int  = MIDIModule.to_int(elements)
-        embeddings = []
-
-        i = 0
-        while i <len(elements):
-            element = elements[i]
-            curr = [0]*len(elements)
-            curr[notes_to_int[element]] = 1
-
-            if(element == "CHORD"):
-                while(element != "CHORDEND"):
-                    i+=1
-                    element = elements[i]
-                    curr = [0] * len(elements)
-                    curr[notes_to_int[element]] = 1
-            else:
-                i+=1
-
-            embeddings.append(curr)
-
-        return embeddings
-
-    @staticmethod
-    def get_sequences(notes, sequence_length):
-        """Retrieve the input and output sequences.
-
-        Args:
-            notes           : List of notes.
-            sequence_length : Length of the sequence ( ex. len(note_list) ).
-
-        Returns:
-            network_input   : Input sequence.
-            network_output  : Output sequence.
-        """
-
-        note_to_int = MIDIModule.to_int(notes)
-        network_input = []
-        network_output = []
-
-        for i in range(0, len(notes) - sequence_length, 1):
-            sequence_in = notes[i:i + sequence_length]
-            sequence_out = notes[i + sequence_length]
-
-            network_input.append([note_to_int[char] for char in sequence_in])
-            network_output.append(note_to_int[sequence_out])
-
-        return network_input, network_output
