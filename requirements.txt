@@ -1,0 +1,6 @@
+tensorflow == 2.4.0
+scipy == 1.5.2
+matplotlib == 3.3.3
+pandas == 0.25.2
+music21 == 6.3.0
+numpy == 1.19.4
