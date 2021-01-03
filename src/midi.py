@@ -138,6 +138,12 @@ class MIDIModule():
             songs.append(notes)
             
         return songs
+    @staticmethod
+    def get_encododed_notes(directory):
+        notes = MIDIModule.get_notes(directory)
+        note_dict = MIDIModule.to_int(notes)
+        encoded_notes = list(map(lambda x: note_dict[x], notes))
+        return encoded_notes
 
 
 
