@@ -34,6 +34,7 @@ class MusicGenerator(Model):
         input_vocab_size = len(w2c_object.forward_map.keys()) + 2
         target_vocab_size = len(w2c_object.back_map.keys()) + 2
 
+        self.w2c = w2c_object
         self.t1 = Transformer(
             2, 
             512, 
@@ -58,10 +59,15 @@ class MusicGenerator(Model):
         x   : The input.
         """
 
-        x = self.t1(x)
-        x = self.dropout(x)
-        x = self.dense(x)
+        x = self.lstm1(x)
+        x = self.dropout1(x)
+        x = self.lstm2(x)
+        x = self.dropout2(x)
+        x = self.lstm3(x)
+        x = self.dense1(x)
+        x = self.dropout3(x)
+        x = self.dense2(x)
 
-        x = self.activation(x)
+        x = self.activation1(x)
 
         return x

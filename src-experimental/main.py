@@ -1,5 +1,5 @@
 # Local import
-from network import MusicGenerator
+from transformer import Transformer
 
 # Third-party import
 import matplotlib.pyplot as plt
@@ -295,31 +295,23 @@ def plot_attention_weights(attention, sentence, result, layer):
     plt.show()
 
 ##### TRAINING DATA #####
-path = '/Users/chance/Documents/github/ghibliMusic/data'
-notes = MIDIModule.get_notes(path)
-
-w2c = word2vec()
-
-processed_data = w2c.process_data(notes)
-w2c.train(notes)
-
 train_dataset = ...
 
 # PRE-EXECUTION.
-# num_layers = 6
-# d_model = 128
-# dff = 512
-# num_heads = 8
+num_layers = 6
+d_model = 128
+dff = 512
+num_heads = 8
 
-# dropout_rate = 0.25
+dropout_rate = 0.25
 
-# MAX_LENGTH = ...
+MAX_LENGTH = ...
 
-# tokenizer_in = ...
-# tokenizer_out = ...
+tokenizer_in = ...
+tokenizer_out = ...
 
-# input_vocab_size = ...
-# target_vocab_size = ...
+input_vocab_size = ...
+target_vocab_size = ...
 
 learning_rate = CustomSchedule(d_model)
 
@@ -332,7 +324,11 @@ optimizer = tf.keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98,
 train_loss = tf.keras.metrics.Mean(name='train_loss')
 train_accuracy = tf.keras.metrics.Mean(name='train_accuracy')
 
-model = MusicGenerator(w2c)
+transformer = Transformer(num_layers, d_model, num_heads, dff,
+                        input_vocab_size, target_vocab_size, 
+                        pe_input=input_vocab_size, 
+                        pe_target=target_vocab_size,
+                        rate=dropout_rate)
 
 # MAIN EXECUTION.
 EPOCHS = 5
@@ -343,6 +339,7 @@ for epoch in range(EPOCHS):
     train_loss.reset_states()
     train_accuracy.reset_states()
 
+    # inp -> portuguese, tar -> english
     for (batch, (inp, tar)) in enumerate(train_dataset):
         train_step(inp, tar)
 
