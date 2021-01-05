@@ -201,6 +201,16 @@ def train_step(inp, tar):
     train_loss(loss)
     train_accuracy(accuracy_function(tar_real, predictions))
 
+
+
+
+
+
+
+
+
+
+
 # def evaluate(inp_sentence):
 #     """...
 
@@ -327,7 +337,8 @@ tokenizer_out = ...
 input_vocab_size = ...
 target_vocab_size = ...
 
-learning_rate = CustomSchedule(d_model)
+#learning_rate = CustomSchedule(d_model)
+learning_rate = 0.1
 
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
     from_logits=True, reduction='none')
