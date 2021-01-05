@@ -46,7 +46,7 @@ class MusicGenerator(Model):
             rate=0.1
         )
         self.dropout = Dropout(0.25)
-        self.dense = Dense(w2c_object.n_notes)
+        self.dense = Dense(w2c_object.n_elements)
         self.activation = Activation('softmax')
 
     def call(self, x):

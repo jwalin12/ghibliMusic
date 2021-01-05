@@ -49,7 +49,7 @@ class MusicGenerator(Model):
             rate=0.1
         )
         self.dropout = Dropout(0.25)
-        self.dense = Dense(w2v_object.n_notes)
+        self.dense = Dense(w2v_object.n_elements)
         self.activation = Activation('softmax')
 
     def call(self, inp, tar_inp, training, enc_padding_mask, combined_mask, dec_padding_mask):

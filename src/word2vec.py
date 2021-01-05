@@ -62,7 +62,7 @@ class word2vec():
         self.forward_map = {note: i for (i, note) in enumerate(self.notes)}
         self.back_map = {i: note for (i, note) in enumerate(self.notes)}
                 
-        # Processes the data from notes and chords into n-hot vectors with context.
+        # Processes the data from elements and chords into n-hot vectors with context.
         processed_data = list()
         for i in range(len(data)):
             # n-hot encodes current data.
@@ -518,12 +518,12 @@ class word2vec():
 # def get_embedding(elements, trained_embeddings = None, embedding_size=256):
 #     """Returns Embeddings of elements.
 
-#     One-hot for notes. If the get_notes methods are used with
-#     make_notes_from_chords = True then it is is multi-hot for notes,
+#     One-hot for elements. If the get_notes methods are used with
+#     make_notes_from_chords = True then it is is multi-hot for elements,
 #     else it is one hot
 
 #     Args:
-#         elements    : List of elements (notes, chords, durations).
+#         elements    : List of elements (elements, chords, durations).
 #         graph : a trained embedding layer
 #         embedding_size: dimesion of embedding.
 #     Returns:
@@ -539,7 +539,7 @@ class word2vec():
 #     """Retrieve the input and output sequences.
 
 #     Args:
-#         directory          : Where to get notes.
+#         directory          : Where to get elements.
 #         sequence_length: dimension of embedding.
 #         sequence_length : Length of the sequence ( ex. len(note_list) ).
 
@@ -549,14 +549,14 @@ class word2vec():
 #     """
 
 #     embeddings = train_word2vec(directory, embedding_size, num_steps)
-#     notes = MIDIModule.get_notes(directory)
-#     notes = get_embedding(notes, embeddings, embedding_size)
+#     elements = MIDIModule.get_notes(directory)
+#     elements = get_embedding(elements, embeddings, embedding_size)
 
 #     network_input = []
 #     network_output = []
-#     for i in range(0, len(notes) - sequence_length, 1):
-#         sequence_in = notes[i:i + sequence_length]
-#         sequence_out = notes[i + sequence_length]
+#     for i in range(0, len(elements) - sequence_length, 1):
+#         sequence_in = elements[i:i + sequence_length]
+#         sequence_out = elements[i + sequence_length]
 #         network_input.append(sequence_in)
 #         network_output.append(sequence_out)
 

@@ -307,7 +307,7 @@ def train_step(inp, tar):
 #     plt.show()
 
 ##### TRAINING DATA #####
-path = '/Users/chance/Documents/github/ghibliMusic/data'
+path = '/Users/jwalinjoshi/ghibliMusic/'
 notes = MIDIModule.get_notes(path)
 
 w2v = word2vec()
@@ -337,8 +337,8 @@ tokenizer_out = ...
 input_vocab_size = ...
 target_vocab_size = ...
 
-#learning_rate = CustomSchedule(d_model)
-learning_rate = 0.1
+learning_rate = CustomSchedule(d_model)
+#learning_rate = 0.1
 
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(
     from_logits=True, reduction='none')

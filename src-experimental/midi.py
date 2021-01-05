@@ -67,16 +67,16 @@ class MIDIModule():
 
         Directory is a string of the filepath from which to import the midi
         files.
-        If chord appends notes seperated by '.' sequential order is preserved. 
-        Output array is a list of all notes in sequential order.
+        If chord appends elements seperated by '.' sequential order is preserved.
+        Output array is a list of all elements in sequential order.
 
         Args:
             directory   : Path where the MIDI file(s) are located.
             make_chords_from_notes: Boolean that indicates whether or not chords should
-            be treated as seperate objects or collections of notes.
+            be treated as seperate objects or collections of elements.
 
         Return:
-            notes   : List of notes transcribed from the MIDI file(s).
+            elements   : List of elements transcribed from the MIDI file(s).
         """
 
         notes = []
@@ -89,7 +89,7 @@ class MIDIModule():
             if parts:
                 notes_to_parse = parts.parts[0].recurse()
             else:
-                notes_to_parse = midi.flat.notes
+                notes_to_parse = midi.flat.elements
 
             for element in notes_to_parse:
                 if isinstance(element, note.Note):
@@ -98,3 +98,21 @@ class MIDIModule():
                     notes.append('.'.join(str(n.pitch) for n in element.notes))
 
         return notes
+
+    @staticmethod
+    def to_int(notes):
+        """Converts elements and chords into integer values.
+        Args:
+            notes   : List of elements.
+        Returns:
+            note_to_int : Dictionary where the KV-pairs are a note and number,
+                            respectively.
+        """
+
+        pitchnames = set(item for item in notes)
+        note_to_int = dict((note, number) for number, note in enumerate(pitchnames))
+
+        return note_to_int
+
+
+
