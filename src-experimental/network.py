@@ -7,6 +7,7 @@ import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.layers import Activation, Conv2D, Dense, Dropout, Flatten, LSTM
+import numpy as np
 
 class MusicGenerator(Model):
     """The tensorflow neural network architecture.
@@ -69,3 +70,21 @@ class MusicGenerator(Model):
         x = self.activation(x)
 
         return x
+
+    '''Returns a one-hot np array from an input tensor, where it will be 1 at the argmax idx.'''
+
+    def force_one_hot(self,inp):
+        hot_idx = tf.argmax(inp)
+        arr = np.zeros(tf.shape(inp))
+        arr[hot_idx] = 1
+        return arr
+
+
+    '''Maps from network output to a note.'''
+
+    def eval(self, inp):
+        one_hot_inp = self.force_one_hot(inp)
+        return self.w2v.back_map.get(one_hot_inp)
+
+
+
