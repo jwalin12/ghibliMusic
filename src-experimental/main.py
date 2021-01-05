@@ -87,7 +87,7 @@ def loss_function(real, pred):
 def accuracy_function(real, pred):
     """Accuracy function for ... """
 
-    accuracies = tf.equal(real, tf.argmax(pred, axis=2))
+    accuracies = tf.equal(real, tf.cast(tf.argmax(pred, axis=2), tf.float32))
 
     mask = tf.math.logical_not(tf.math.equal(real, 0))
     accuracies = tf.math.logical_and(mask, accuracies)
@@ -98,12 +98,12 @@ def accuracy_function(real, pred):
 
 def create_padding_mask(seq):
     """Returns a tensor of seq length to act as padding. """
-
-    seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
+    seq = np.asarray(seq).astype('float32')
+    #seq = tf.cast(tf.math.equal(seq, 0), tf.float32)
 
     # add extra dimensions to add the padding
     # to the attention logits.
-    return seq[:, tf.newaxis, tf.newaxis, :]  # (batch_size, 1, 1, seq_len)
+    return tf.convert_to_tensor(seq[:, tf.newaxis, tf.newaxis, :]) # (batch_size, 1, 1, seq_len)
 
 def create_look_ahead_mask(size):
     """Returns a tensor that restricts generation to previous inputs. """
@@ -124,7 +124,7 @@ def create_masks(inp, tar):
     # Used in the 1st attention block in the decoder.
     # It is used to pad and mask future tokens in the input received by 
     # the decoder.
-    look_ahead_mask = create_look_ahead_mask(tf.shape(tar)[1])
+    look_ahead_mask = tf.convert_to_tensor(create_look_ahead_mask(np.shape(tar)[1]))
     dec_target_padding_mask = create_padding_mask(tar)
     combined_mask = tf.maximum(dec_target_padding_mask, look_ahead_mask)
 
@@ -297,7 +297,7 @@ def train_step(inp, tar):
 #     plt.show()
 
 ##### TRAINING DATA #####
-path = '/Users/chance/Documents/github/ghibliMusic/data'
+path = '/Users/jwalinjoshi/ghibliMusic/'
 notes = MIDIModule.get_notes(path)
 
 w2v = word2vec()
@@ -345,7 +345,21 @@ for epoch in range(EPOCHS):
 
     # inp -> portuguese, tar -> english
     for (batch, (inp, tar)) in enumerate(train_dataset):
-        train_step(inp, tar)
+        inp = tf.convert_to_tensor(inp, np.float32)
+        tar_inp = tf.convert_to_tensor(tar[:, :-1], np.float32)
+        tar_real = tf.convert_to_tensor(tar[:, 1:], np.float32)
+        #tar_inp = tf.convert_to_tensor(tar_inp)
+
+        enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
+        with tf.GradientTape() as tape:
+            predictions= model(inp, tar_inp, True, enc_padding_mask,combined_mask,dec_padding_mask)
+            loss = loss_function(tar_real, predictions)
+
+        gradients = tape.gradient(loss, model.trainable_variables)
+        optimizer.apply_gradients(zip(gradients, model.trainable_variables))
+
+        train_loss(loss)
+        train_accuracy(accuracy_function(tar_real, predictions))
 
         if batch % 50 == 0:
             print('Epoch {} Batch {} Loss {:.4f} Accuracy {:.4f}'.format(

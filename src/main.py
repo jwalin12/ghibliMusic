@@ -1,5 +1,8 @@
 # Local import
 from network import MusicGenerator
+from src.midi import MIDIModule
+from src.word2vec import word2vec
+from src.transformer import Transformer
 
 # Third-party import
 import matplotlib.pyplot as plt
@@ -186,7 +189,7 @@ def train_step(inp, tar):
     enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
 
     with tf.GradientTape() as tape:
-        predictions, _ = transformer(inp, tar_inp, 
+        predictions, _ = transformer(inp, tar_inp,
                                     True, 
                                     enc_padding_mask, 
                                     combined_mask, 
@@ -295,15 +298,15 @@ def plot_attention_weights(attention, sentence, result, layer):
     plt.show()
 
 ##### TRAINING DATA #####
-path = '/Users/chance/Documents/github/ghibliMusic/data'
+path = '/Users/jwalinjoshi/ghibliMusic/'
 notes = MIDIModule.get_notes(path)
 
 w2c = word2vec()
 
 processed_data = w2c.process_data(notes)
-w2c.train(notes)
+w2c.train(processed_data)
 
-train_dataset = ...
+train_dataset = processed_data[:5]
 
 # PRE-EXECUTION.
 # num_layers = 6
@@ -320,7 +323,7 @@ train_dataset = ...
 
 # input_vocab_size = ...
 # target_vocab_size = ...
-
+d_model = 128
 learning_rate = CustomSchedule(d_model)
 
 loss_object = tf.keras.losses.SparseCategoricalCrossentropy(

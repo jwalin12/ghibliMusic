@@ -68,12 +68,12 @@ class word2vec():
             target = self.to_nhot(data[i])
 
             # Determines and n-hot encodes context data.
-            context = list()
-            for j in range(i - self.window_size, i + self.window_size + 1):
-                if ((j != i) and (j <= (len(data) - 1)) and (j >= 0)):
-                    context.append(self.to_nhot(data[j]))
+            # context = list()
+            # for j in range(i - self.window_size, i + self.window_size + 1):
+            #     if ((j != i) and (j <= (len(data) - 1)) and (j >= 0)):
+            #         context.append(self.to_nhot(data[j]))
                     
-            processed_data.append([target, context])
+            processed_data.append([target])
             
         # Returns the processed data in the form: [current_vector, [context_vectors, ...]].
         return np.array(processed_data, dtype=list)
