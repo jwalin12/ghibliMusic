@@ -1,5 +1,7 @@
 # Local import
-from transformer import Transformer
+from midi import MIDIModule
+from network import MusicGenerator
+from word2vec import word2vec
 
 # Third-party import
 import matplotlib.pyplot as plt
@@ -186,116 +188,122 @@ def train_step(inp, tar):
     enc_padding_mask, combined_mask, dec_padding_mask = create_masks(inp, tar_inp)
 
     with tf.GradientTape() as tape:
-        predictions, _ = transformer(inp, tar_inp, 
-                                    True, 
-                                    enc_padding_mask, 
-                                    combined_mask, 
-                                    dec_padding_mask)
+        predictions, _ = model(inp, tar_inp, 
+                               True, 
+                               enc_padding_mask, 
+                               combined_mask, 
+                               dec_padding_mask)
         loss = loss_function(tar_real, predictions)
 
-    gradients = tape.gradient(loss, transformer.trainable_variables)    
-    optimizer.apply_gradients(zip(gradients, transformer.trainable_variables))
+    gradients = tape.gradient(loss, model.trainable_variables)    
+    optimizer.apply_gradients(zip(gradients, model.trainable_variables))
 
     train_loss(loss)
     train_accuracy(accuracy_function(tar_real, predictions))
 
-def evaluate(inp_sentence):
-    """...
+# def evaluate(inp_sentence):
+#     """...
 
-    Args:
-        inp_sentence : ...
+#     Args:
+#         inp_sentence : ...
 
-    Returns:
-        tf.squeeze(output, axis=0)  : ...
-        attention_weights           : ...
-    """
+#     Returns:
+#         tf.squeeze(output, axis=0)  : ...
+#         attention_weights           : ...
+#     """
 
-    start_token = [tokenizer_in.size]
-    end_token = [tokenizer_in.size + 1]
+#     start_token = [tokenizer_in.size]
+#     end_token = [tokenizer_in.size + 1]
 
-    # inp sentence is portuguese, hence adding the start and end token
-    inp_sentence = start_token + tokenizer_in.encode(inp_sentence) + end_token
-    encoder_input = tf.expand_dims(inp_sentence, 0)
+#     # inp sentence is portuguese, hence adding the start and end token
+#     inp_sentence = start_token + tokenizer_in.encode(inp_sentence) + end_token
+#     encoder_input = tf.expand_dims(inp_sentence, 0)
 
-    # as the target is english, the first word to the transformer should be the
-    # english start token.
-    decoder_input = [tokenizer_out.size]
-    output = tf.expand_dims(decoder_input, 0)
+#     # as the target is english, the first word to the transformer should be the
+#     # english start token.
+#     decoder_input = [tokenizer_out.size]
+#     output = tf.expand_dims(decoder_input, 0)
 
-    for _ in range(MAX_LENGTH):
-        enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
-            encoder_input, output)
+#     for _ in range(MAX_LENGTH):
+#         enc_padding_mask, combined_mask, dec_padding_mask = create_masks(
+#             encoder_input, output)
 
-        # predictions.shape == (batch_size, seq_len, vocab_size)
-        predictions, attention_weights = Transformer(encoder_input, 
-                                                    output,
-                                                    False,
-                                                    enc_padding_mask,
-                                                    combined_mask,
-                                                    dec_padding_mask)
+#         # predictions.shape == (batch_size, seq_len, vocab_size)
+#         predictions, attention_weights = Transformer(encoder_input, 
+#                                                     output,
+#                                                     False,
+#                                                     enc_padding_mask,
+#                                                     combined_mask,
+#                                                     dec_padding_mask)
 
-        # select the last word from the seq_len dimension
-        predictions = predictions[: ,-1:, :]  # (batch_size, 1, vocab_size)
+#         # select the last word from the seq_len dimension
+#         predictions = predictions[: ,-1:, :]  # (batch_size, 1, vocab_size)
 
-        predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
+#         predicted_id = tf.cast(tf.argmax(predictions, axis=-1), tf.int32)
 
-        # return the result if the predicted_id is equal to the end token
-        if predicted_id == tokenizer_out.size+1:
-            return tf.squeeze(output, axis=0), attention_weights
+#         # return the result if the predicted_id is equal to the end token
+#         if predicted_id == tokenizer_out.size+1:
+#             return tf.squeeze(output, axis=0), attention_weights
 
-        # concatentate the predicted_id to the output which is given to the decoder
-        # as its input.
-        output = tf.concat([output, predicted_id], axis=-1)
+#         # concatentate the predicted_id to the output which is given to the decoder
+#         # as its input.
+#         output = tf.concat([output, predicted_id], axis=-1)
 
-    return tf.squeeze(output, axis=0), attention_weights
+#     return tf.squeeze(output, axis=0), attention_weights
 
-def plot_attention_weights(attention, sentence, result, layer):
-    """...
+# def plot_attention_weights(attention, sentence, result, layer):
+#     """...
 
-    Args:
-        attention   : ...
-        sentence    : ...
-        result      : ...
-        layer       : ...
+#     Args:
+#         attention   : ...
+#         sentence    : ...
+#         result      : ...
+#         layer       : ...
 
-    Returns:
-        None
-    """
+#     Returns:
+#         None
+#     """
 
-    fig = plt.figure(figsize=(16, 8))
+#     fig = plt.figure(figsize=(16, 8))
 
-    sentence = tokenizer_in.encode(sentence)
+#     sentence = tokenizer_in.encode(sentence)
 
-    attention = tf.squeeze(attention[layer], axis=0)
+#     attention = tf.squeeze(attention[layer], axis=0)
 
-    for head in range(attention.shape[0]):
-        ax = fig.add_subplot(2, 4, head+1)
+#     for head in range(attention.shape[0]):
+#         ax = fig.add_subplot(2, 4, head+1)
 
-        # plot the attention weights
-        ax.matshow(attention[head][:-1, :], cmap='viridis')
+#         # plot the attention weights
+#         ax.matshow(attention[head][:-1, :], cmap='viridis')
 
-        fontdict = {'fontsize': 10}
+#         fontdict = {'fontsize': 10}
 
-        ax.set_xticks(range(len(sentence)+2))
-        ax.set_yticks(range(len(result)))
+#         ax.set_xticks(range(len(sentence)+2))
+#         ax.set_yticks(range(len(result)))
 
-        ax.set_ylim(len(result)-1.5, -0.5)
+#         ax.set_ylim(len(result)-1.5, -0.5)
 
-        ax.set_xticklabels(
-            ['<start>']+[tokenizer_in.decode([i]) for i in sentence]+['<end>'], 
-            fontdict=fontdict, rotation=90)
+#         ax.set_xticklabels(
+#             ['<start>']+[tokenizer_in.decode([i]) for i in sentence]+['<end>'], 
+#             fontdict=fontdict, rotation=90)
 
-        ax.set_yticklabels(
-            [tokenizer_out.decode([i]) for i in result if i < tokenizer_out.size], 
-            fontdict=fontdict)
+#         ax.set_yticklabels(
+#             [tokenizer_out.decode([i]) for i in result if i < tokenizer_out.size], 
+#             fontdict=fontdict)
 
-        ax.set_xlabel('Head {}'.format(head+1))
+#         ax.set_xlabel('Head {}'.format(head+1))
 
-    plt.tight_layout()
-    plt.show()
+#     plt.tight_layout()
+#     plt.show()
 
 ##### TRAINING DATA #####
-train_dataset = ...
+path = '/Users/chance/Documents/github/ghibliMusic/data'
+notes = MIDIModule.get_notes(path)
+
+w2v = word2vec()
+processed_notes = w2v.process_data(notes)
+
+train_dataset = zip(processed_notes[:-1], processed_notes[1:])
 
 # PRE-EXECUTION.
 num_layers = 6
@@ -324,11 +332,7 @@ optimizer = tf.keras.optimizers.Adam(learning_rate, beta_1=0.9, beta_2=0.98,
 train_loss = tf.keras.metrics.Mean(name='train_loss')
 train_accuracy = tf.keras.metrics.Mean(name='train_accuracy')
 
-transformer = Transformer(num_layers, d_model, num_heads, dff,
-                        input_vocab_size, target_vocab_size, 
-                        pe_input=input_vocab_size, 
-                        pe_target=target_vocab_size,
-                        rate=dropout_rate)
+model = MusicGenerator(w2v)
 
 # MAIN EXECUTION.
 EPOCHS = 5
