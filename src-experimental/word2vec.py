@@ -11,7 +11,7 @@ class word2vec():
     ...
     """
 
-    def __init__(self, n=10, alpha=1e-4, window_size=2):
+    def __init__(self, epochs=25, n=10, alpha=1e-4, window_size=2):
         """...
 
         ...
@@ -26,6 +26,7 @@ class word2vec():
             None
         """
 
+        self.epochs = epochs
         self.n = n
         self.alpha = alpha
         self.window_size = window_size
@@ -68,12 +69,12 @@ class word2vec():
             target = self.to_nhot(data[i])
 
             # Determines and n-hot encodes context data.
-            # context = list()
-            # for j in range(i - self.window_size, i + self.window_size + 1):
-            #     if ((j != i) and (j <= (len(data) - 1)) and (j >= 0)):
-            #         context.append(self.to_nhot(data[j]))
+            context = list()
+            for j in range(i - self.window_size, i + self.window_size + 1):
+                if ((j != i) and (j <= (len(data) - 1)) and (j >= 0)):
+                    context.append(self.to_nhot(data[j]))
                     
-            processed_data.append([target])
+            processed_data.append([target, context])
             
         # Returns the processed data in the form: [current_vector, [context_vectors, ...]].
         return np.array(processed_data, dtype=list)
@@ -144,38 +145,38 @@ class word2vec():
         self.w2 = self.w2 - (self.alpha * dl_dw2)
         pass
 
-    # def train(self, training_data):
-    #     """...
+    def train(self, training_data):
+        """...
 
-    #     ...
+        ...
 
-    #     Args:
-    #         training_data
+        Args:
+            training_data
 
-    #     Returns:
-    #         ...
-    #     """
+        Returns:
+            ...
+        """
 
-    #     self.w1 = np.random.uniform(-0.8, 0.8, (self.n_notes, self.n))     # embedding matrix
-    #     self.w2 = np.random.uniform(-0.8, 0.8, (self.n, self.n_notes))     # context matrix
+        self.w1 = np.random.uniform(-0.8, 0.8, (self.n_notes, self.n))     # embedding matrix
+        self.w2 = np.random.uniform(-0.8, 0.8, (self.n, self.n_notes))     # context matrix
         
-    #     for i in range(0, self.epochs):
+        for i in range(0, self.epochs):
 
-    #         self.loss = 0
+            self.loss = 0
 
-    #         for n_t, n_c in training_data:
+            for n_t, n_c in training_data:
 
-    #             y_pred, h, u = self.forward_prop(n_t)
+                y_pred, h, u = self.forward_prop(n_t)
 
-    #             EI = np.sum([np.subtract(y_pred, note) for note in n_c], axis=0)
+                EI = np.sum([np.subtract(y_pred, note) for note in n_c], axis=0)
 
-    #             self. back_prop(EI, h, n_t)
+                self. back_prop(EI, h, n_t)
 
-    #             self.loss += -np.sum([u[note.index(1)] for note in n_c]) + len(n_c) * np.log(np.sum(np.exp(u)))
-    #             #self.loss += -2*np.log(len(n_c)) -np.sum([u[word.index(1)] for word in n_c]) + (len(n_c) * np.log(np.sum(np.exp(u))))
+                self.loss += -np.sum([u[note.index(1)] for note in n_c]) + len(n_c) * np.log(np.sum(np.exp(u)))
+                #self.loss += -2*np.log(len(n_c)) -np.sum([u[word.index(1)] for word in n_c]) + (len(n_c) * np.log(np.sum(np.exp(u))))
                 
-    #         print('EPOCH:',i, 'LOSS:', self.loss)
-    #     pass
+            print('EPOCH:',i, 'LOSS:', self.loss)
+        pass
 
     def note_vec(self, note):
         """Input a word, returns a vector (if available).

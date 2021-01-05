@@ -3,6 +3,7 @@ from transformer import Transformer
 from word2vec import word2vec
 
 # Third-party imports
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import Model
 from tensorflow.keras.layers import Layer
@@ -58,6 +59,8 @@ class MusicGenerator(Model):
         Arguments:
         x   : The input.
         """
+        assert not np.any(np.isnan(inp))
+        assert not np.any(np.isnan(tar_inp))
 
         x = self.t1(inp, tar_inp, 
                     training, 

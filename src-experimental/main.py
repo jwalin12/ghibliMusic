@@ -297,11 +297,17 @@ def train_step(inp, tar):
 #     plt.show()
 
 ##### TRAINING DATA #####
-path = '/Users/jwalinjoshi/ghibliMusic/'
+path = '/Users/chance/Documents/github/ghibliMusic/data'
 notes = MIDIModule.get_notes(path)
 
 w2v = word2vec()
 processed_notes = w2v.process_data(notes)
+
+# Pre-train word2vec.
+w2v.train(processed_notes)
+
+# Removes context vectors.
+processed_notes = np.array([[ls] for ls in processed_notes[:,0]], dtype=list)
 
 train_dataset = zip(processed_notes[:-1], processed_notes[1:])
 
